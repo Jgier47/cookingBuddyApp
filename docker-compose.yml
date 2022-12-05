@@ -17,7 +17,7 @@ services:
     image: mysql:5.7
     networks:
       - springmysql-net
-    env_file: ./.env
+    env_file: .env
     environment:
       - MYSQL_ROOT_PASSWORD=$MYSQLDB_ROOT_PASSWORD
       - MYSQL_DATABASE=recipedb

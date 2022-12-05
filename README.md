@@ -6,7 +6,8 @@ This is a sample Java / Maven / Spring Boot application that can be used as a st
 
 1) Clone the repository
 2) Build Maven project
-3) Navigate to root directory and use
+3) Make sure that docker is running
+4) Navigate to root directory and use
 
 ```bash
 docker-compose up
