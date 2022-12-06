@@ -1,4 +1,4 @@
-version: "1"
+version: "3.8"
 services:
   server:
     build:
@@ -11,7 +11,8 @@ services:
     networks:
       - springmysql-net
     depends_on:
-      - mysqldb
+      mysqldb:
+        condition: service_healthy
 
   mysqldb:
     image: mysql:5.7
@@ -23,6 +24,10 @@ services:
       - MYSQL_DATABASE=recipedb
       - MYSQL_USER=$MYSQLDB_USER
       - MYSQL_PASSWORD=$MYSQLDB_PASSWORD
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+      timeout: 20s
+      retries: 10
 
 networks:
   springmysql-net:
