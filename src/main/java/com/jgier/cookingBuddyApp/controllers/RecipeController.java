@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -52,7 +53,7 @@ public class RecipeController {
             if (theRecipe != null) {
                 return new ResponseEntity<>(theRecipe, HttpStatus.OK);
             } else
-                return new ResponseStatusException(NOT_FOUND, "Not found");
+                return new ResponseStatusException(NOT_FOUND, "Not found", new NoSuchElementException());
         } catch (ResponseStatusException exc) {
             return new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error");
         }
@@ -67,7 +68,7 @@ public class RecipeController {
                 recipeRepository.save(theRecipeRequest);
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             } else
-                return new ResponseStatusException(NOT_FOUND, "Not found");
+                return new ResponseStatusException(NOT_FOUND, "Not found", new NoSuchElementException());
         } catch (ResponseStatusException exc) {
             return new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error");
         }
@@ -77,11 +78,11 @@ public class RecipeController {
     public Object deleteRecipe(@PathVariable String recipeName) {
         try {
             Recipe theRecipe = getTheRecipeByName(recipeName);
-            if (getTheRecipeByName(recipeName) != null) {
+            if (theRecipe != null) {
                 recipeRepository.delete(theRecipe);
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             } else
-                return new ResponseStatusException(NOT_FOUND, "Not found");
+                return new ResponseStatusException(NOT_FOUND, "Not found", new NoSuchElementException());
         } catch (ResponseStatusException exc) {
             return new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error");
         }
