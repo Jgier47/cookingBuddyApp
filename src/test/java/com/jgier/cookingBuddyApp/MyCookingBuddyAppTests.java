@@ -15,11 +15,11 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
 @WebMvcTest(RecipeController.class)
@@ -48,12 +48,9 @@ public class MyCookingBuddyAppTests {
      */
     public void getRecipeList_200() throws Exception {
         String uri = "/recipes";
-        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get(uri)
-                .accept(MediaType.APPLICATION_JSON_VALUE)).andReturn();
-
-        int status = mvcResult.getResponse().getStatus();
-        assertEquals(200, status);
-
+        mockMvc.perform(MockMvcRequestBuilders.get(uri)
+                        .accept(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -63,13 +60,10 @@ public class MyCookingBuddyAppTests {
      */
     public void createRecipe_201() throws Exception {
         String uri = "/recipes";
-        String inputJson = mapToJson(testRecipe);
-        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post(uri)
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(inputJson)).andReturn();
-
-        int status = mvcResult.getResponse().getStatus();
-        assertEquals(201, status);
+        mockMvc.perform(MockMvcRequestBuilders.post(uri)
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(mapToJson(testRecipe)))
+                .andExpect(status().isCreated());
     }
 
     @Test
@@ -79,12 +73,9 @@ public class MyCookingBuddyAppTests {
      */
     public void getSingleRecipe_404() throws Exception {
         String uri = "/recipes/not_existing_recipe_test";
-        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get(uri)
-                .accept(MediaType.APPLICATION_JSON_VALUE)).andReturn();
-
-        int status = mvcResult.getResponse().getStatus();
-        assertEquals(404, status);
-
+        mockMvc.perform(MockMvcRequestBuilders.get(uri)
+                        .accept(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -95,11 +86,11 @@ public class MyCookingBuddyAppTests {
     public void getSingleRecipe_200() throws Exception {
         String uri = "/recipes/Recipe_Test_Name";
         when(recipeRepository.findByName("Recipe_Test_Name")).thenReturn(testRecipe);
-        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get(uri)
-                .accept(MediaType.APPLICATION_JSON_VALUE)).andReturn();
-
-        int status = mvcResult.getResponse().getStatus();
-        assertEquals(200, status);
+        mockMvc.perform(MockMvcRequestBuilders.get(uri)
+                        .accept(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isOk())
+                .andExpect(result -> assertEquals(mapToJson(testRecipe),
+                        result.getResponse().getContentAsString()));
     }
 
     @Test
@@ -112,12 +103,10 @@ public class MyCookingBuddyAppTests {
         testRecipeUpdated.setName("Recipe_Test_Name_Updated");
 
         when(recipeRepository.findByName("Recipe_Test_Name")).thenReturn(testRecipe);
-        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.put("/recipes/Recipe_Test_Name")
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(mapToJson(testRecipeUpdated))).andReturn();
-
-        int status = mvcResult.getResponse().getStatus();
-        assertEquals(204, status);
+        mockMvc.perform(MockMvcRequestBuilders.put("/recipes/Recipe_Test_Name")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(mapToJson(testRecipeUpdated)))
+                .andExpect(status().isNoContent());
     }
 
     @Test
@@ -130,12 +119,10 @@ public class MyCookingBuddyAppTests {
         testRecipeUpdated.setInstructions("Recipe_Instructions_Updated");
 
         when(recipeRepository.findByName("Recipe_Test_Name")).thenReturn(testRecipe);
-        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.put("/recipes/Recipe_Test_Name")
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(mapToJson(testRecipeUpdated))).andReturn();
-
-        int status = mvcResult.getResponse().getStatus();
-        assertEquals(204, status);
+        mockMvc.perform(MockMvcRequestBuilders.put("/recipes/Recipe_Test_Name")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(mapToJson(testRecipeUpdated)))
+                .andExpect(status().isNoContent());
     }
 
     @Test
@@ -148,12 +135,10 @@ public class MyCookingBuddyAppTests {
         testRecipeUpdated.setAuthor("newRecipeAuthorUpdated@gmail.com");
 
         when(recipeRepository.findByName("Recipe_Test_Name")).thenReturn(testRecipe);
-        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.put("/recipes/Recipe_Test_Name")
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(mapToJson(testRecipeUpdated))).andReturn();
-
-        int status = mvcResult.getResponse().getStatus();
-        assertEquals(204, status);
+        mockMvc.perform(MockMvcRequestBuilders.put("/recipes/Recipe_Test_Name")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(mapToJson(testRecipeUpdated)))
+                .andExpect(status().isNoContent());
     }
 
     @Test
@@ -164,14 +149,11 @@ public class MyCookingBuddyAppTests {
     public void deleteRecipe_204() throws Exception {
         when(recipeRepository.findByName("Recipe_Test_Name")).thenReturn(testRecipe);
         String uri = "/recipes/Recipe_Test_Name";
-        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.delete(uri)).andReturn();
-        int status = mvcResult.getResponse().getStatus();
-        assertEquals(204, status);
+        mockMvc.perform(MockMvcRequestBuilders.delete(uri))
+                .andExpect(status().isNoContent());
     }
 
-
     protected String mapToJson(Object obj) throws JsonProcessingException {
-        com.fasterxml.jackson.databind.ObjectMapper objectMapper = new ObjectMapper();
         return objectMapper.writeValueAsString(obj);
     }
 }
