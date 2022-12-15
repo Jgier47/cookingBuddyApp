@@ -1,94 +1,70 @@
 package com.jgier.cookingBuddyApp.controllers;
 
 import com.jgier.cookingBuddyApp.components.schemas.Recipe;
-import com.jgier.cookingBuddyApp.dao.RecipeRepository;
+import com.jgier.cookingBuddyApp.components.schemas.RecipeDTO;
+import com.jgier.cookingBuddyApp.service.RecipeService;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
-
-@ResponseStatus(value = INTERNAL_SERVER_ERROR)
 @RestController
 public class RecipeController {
 
-    private final RecipeRepository recipeRepository;
+    @Autowired
+    private ModelMapper modelMapper;
 
     @Autowired
-    public RecipeController(RecipeRepository recipeRepository) {
-        this.recipeRepository = recipeRepository;
+    RecipeService recipeService;
+
+    @Autowired
+    public RecipeController(RecipeService recipeService) {
+        this.recipeService = recipeService;
     }
 
     @GetMapping("/recipes")
-    public Object showAllRecipes() {
-        try {
-            List<Recipe> recipes = recipeRepository.findAll();
-            return new ResponseEntity<>(recipes, HttpStatus.OK);
-        } catch (ResponseStatusException exc) {
-            return new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error");
-        }
+    public List<RecipeDTO> showAllRecipes() {
+        return recipeService.findAll().stream().map(post -> modelMapper.map(post, RecipeDTO.class))
+                .collect(Collectors.toList());
     }
 
     @PostMapping("/recipes")
-    public Object saveRecipe(@RequestBody Recipe recipe) {
-        try {
-            recipeRepository.save(recipe);
-            return new ResponseEntity<>(HttpStatus.CREATED);
-        } catch (ResponseStatusException exc) {
-            return new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error");
-        }
+    public ResponseEntity<RecipeDTO> createRecipe(@Valid @RequestBody RecipeDTO recipeDTO) {
+
+        Recipe recipeRequest = modelMapper.map(recipeDTO, Recipe.class);
+        recipeService.createRecipe(recipeRequest);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @GetMapping("/recipes/{recipeName}")
-    public Object getRecipe(@PathVariable String recipeName) {
-        try {
-            Recipe theRecipe = getTheRecipeByName(recipeName);
-            if (theRecipe != null) {
-                return new ResponseEntity<>(theRecipe, HttpStatus.OK);
-            } else
-                return new ResponseStatusException(NOT_FOUND, "Not found", new NoSuchElementException());
-        } catch (ResponseStatusException exc) {
-            return new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error");
-        }
+    public ResponseEntity<RecipeDTO> getRecipe(@PathVariable String recipeName) {
+        Recipe recipeFromDb = recipeService.findByName(recipeName);
+        if (recipeFromDb == null)
+            throw new NoSuchElementException();
+        RecipeDTO recipeResponse = modelMapper.map(recipeFromDb, RecipeDTO.class);
+
+        return new ResponseEntity<>(recipeResponse, HttpStatus.OK);
     }
 
     @PutMapping("/recipes/{recipeName}")
-    public Object updateRecipe(@RequestBody @NotNull Recipe theRecipeRequest, @PathVariable String recipeName) {
-        try {
-            Recipe theRecipe = getTheRecipeByName(recipeName);
-            if (theRecipe != null) {
-                theRecipeRequest.setId(theRecipe.getId());
-                recipeRepository.save(theRecipeRequest);
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-            } else
-                return new ResponseStatusException(NOT_FOUND, "Not found", new NoSuchElementException());
-        } catch (ResponseStatusException exc) {
-            return new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error");
-        }
+    public ResponseEntity<RecipeDTO> updateRecipe(@Valid @RequestBody @NotNull RecipeDTO theRecipeDto, @PathVariable String recipeName) {
+
+        Recipe recipeRequest = modelMapper.map(theRecipeDto, Recipe.class);
+        recipeService.updateRecipe(recipeName, recipeRequest);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @DeleteMapping("/recipes/{recipeName}")
-    public Object deleteRecipe(@PathVariable String recipeName) {
-        try {
-            Recipe theRecipe = getTheRecipeByName(recipeName);
-            if (theRecipe != null) {
-                recipeRepository.delete(theRecipe);
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-            } else
-                return new ResponseStatusException(NOT_FOUND, "Not found", new NoSuchElementException());
-        } catch (ResponseStatusException exc) {
-            return new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error");
-        }
+    public ResponseEntity<RecipeDTO> deleteRecipe(@PathVariable String recipeName) {
+        recipeService.deleteRecipe(recipeName);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    private Recipe getTheRecipeByName(String recipeName) {
-        return recipeRepository.findByName(recipeName);
-    }
 }

@@ -3,8 +3,14 @@ package com.jgier.cookingBuddyApp.components.schemas;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "recipe")
 public class Recipe {
@@ -28,54 +34,4 @@ public class Recipe {
     @Column(name = "author", length = 128, unique = true)
     private String author;
 
-    public Recipe() {
-    }
-
-    public Recipe(String recipeName, String instructions, String author) {
-        this.name = recipeName;
-        this.instructions = instructions;
-        this.author = author;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getInstructions() {
-        return instructions;
-    }
-
-    public void setInstructions(String instructions) {
-        this.instructions = instructions;
-    }
-
-    public String getAuthor() {
-        return author;
-    }
-
-    public void setAuthor(String author) {
-        this.author = author;
-    }
-
-    @Override
-    public String toString() {
-        return "Recipe{" +
-                "id=" + id +
-                ", recipe name='" + name + '\'' +
-                ", instructions='" + instructions + '\'' +
-                ", author='" + author + '\'' +
-                '}';
-    }
 }
