@@ -19,11 +19,6 @@ services:
     networks:
       - springmysql-net
     env_file: .env
-    environment:
-      - MYSQL_ROOT_PASSWORD=$MYSQLDB_ROOT_PASSWORD
-      - MYSQL_DATABASE=recipedb
-      - MYSQL_USER=$MYSQLDB_USER
-      - MYSQL_PASSWORD=$MYSQLDB_PASSWORD
     healthcheck:
       test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
       timeout: 20s
